@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>S'thandiwe — GED Planner</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet"/>
+<style>
+/* ─────────────────────────────────────────────
+   APPLE SYSTEM DESIGN TOKENS
+───────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg:          #000000;
+  --bg-elevated: #1C1C1E;
+  --bg-card:     #2C2C2E;
+  --bg-card-2:   #3A3A3C;
+  --bg-inset:    rgba(255,255,255,0.05);
+  --glass:       rgba(28,28,30,0.85);
+
+  /* Labels */
+  --label:         #FFFFFF;
+  --label-2:       rgba(235,235,245,0.60);
+  --label-3:       rgba(235,235,245,0.30);
+  --label-4:       rgba(235,235,245,0.16);
+
+  /* Separators */
+  --sep:           rgba(84,84,88,0.65);
+  --sep-opaque:    #38383A;
+
+  /* System Colors */
+  --blue:    #0A84FF;
+  --green:   #30D158;
+  --red:     #FF453A;
+  --orange:  #FF9F0A;
+  --yellow:  #FFD60A;
+  --purple:  #BF5AF2;
+  --teal:    #40CBE0;
+  --indigo:  #5E5CE6;
+  --pink:    #FF375F;
+
+  /* Fill */
+  --fill-1: rgba(120,120,128,0.36);
+  --fill-2: rgba(120,120,128,0.32);
+  --fill-3: rgba(118,118,128,0.24);
+  --fill-4: rgba(116,116,128,0.18);
+
+  /* Radius */
+  --r-sm:  10px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+
+  /* Fonts — SF Pro stack */
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ─────────────────────────────────────────────
+   RESET & BASE
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--label);
+  font-family: var(--font);
+  min-height: 100vh;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  overscroll-behavior: none;
+}
+::selection { background: rgba(10,132,255,0.3); }
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+
+/* ─────────────────────────────────────────────
+   LARGE TITLE / NAVIGATION BAR
+───────────────────────────────────────────── */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: env(safe-area-inset-top) 0 0;
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--sep);
+}
+.nav-inner {
+  padding: 12px 20px 10px;
+}
+.nav-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--label-3);
+  margin-bottom: 2px;
+}
+.nav-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--label);
+  line-height: 1.1;
+}
+.nav-sub {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--label-2);
+  margin-top: 1px;
+}
+
+/* Countdown chips */
+.chips-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px 14px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+.chip {
+  flex-shrink: 0;
+  background: var(--fill-3);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  border: 0.5px solid var(--sep);
+}
+.chip-icon { font-size: 22px; }
+/* .chip-text-wrap {} */
+.chip-top { font-size: 11px; font-weight: 500; color: var(--label-2); }
+.chip-num { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+.chip-bot { font-size: 11px; color: var(--label-3); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.chip-urgent { animation: pulse 1.6s ease infinite; }
+
+/* ─────────────────────────────────────────────
+   BOTTOM TAB BAR (iOS style)
+───────────────────────────────────────────── */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 300;
+  background: var(--glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border-top: 0.5px solid var(--sep);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  cursor: pointer;
+  padding: 6px 0 0;
+  transition: opacity 0.15s;
+  -webkit-user-select: none; user-select: none;
+  background: none; border: none;
+  font-family: var(--font);
+}
+.tab-item:active { opacity: 0.5; }
+.tab-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  font-size: 18px;
+  color: white;
+  transition: background 0.15s, transform 0.15s;
+}
+.tab-item.active .tab-icon {
+  background: rgba(10,132,255,0.18);
+  transform: scale(1.06);
+}
+.tab-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--label-3);
+  letter-spacing: 0.01em;
+}
+.tab-item.active .tab-label { color: var(--blue); font-weight: 600; }
+
+/* ─────────────────────────────────────────────
+   CONTENT / PANELS
+───────────────────────────────────────────── */
+.panels { overflow: hidden; }
+.panel { display: none; padding: 20px 16px; max-width: 600px; margin: 0 auto; }
+.panel.active {
+  display: block;
+  animation: panelIn 0.28s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+@keyframes panelIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─────────────────────────────────────────────
+   SECTION HEADERS (iOS grouped list style)
+───────────────────────────────────────────── */
+.section-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--label-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 24px 4px 8px;
+}
+.section-header:first-child { margin-top: 0; }
+
+/* ─────────────────────────────────────────────
+   CARDS — grouped list (iOS Inset Grouped)
+───────────────────────────────────────────── */
+.card {
+  background: var(--bg-elevated);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-bottom: 0.5px solid var(--sep);
+  min-height: 50px;
+}
+.card-row:last-child { border-bottom: none; }
+.card-icon-wrap {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.card-row-body { flex: 1; min-width: 0; }
+.card-row-title { font-size: 15px; font-weight: 500; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-row-sub { font-size: 12px; color: var(--label-2); margin-top: 1px; }
+.card-row-trail { font-size: 15px; color: var(--label-3); flex-shrink: 0; }
+.card-row-trail-bold { font-size: 15px; font-weight: 600; flex-shrink: 0; }
+.chevron { color: var(--label-4); font-size: 12px; margin-left: 4px; }
+
+/* ─────────────────────────────────────────────
+   GED PROGRESS HERO CARD
+───────────────────────────────────────────── */
+.hero-card {
+  background: var(--bg-elevated);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.hero-title { font-size: 17px; font-weight: 600; color: var(--label); }
+.hero-sub { font-size: 13px; color: var(--label-2); margin-top: 2px; }
+.hero-num-wrap { text-align: right; }
+.hero-num { font-size: 40px; font-weight: 700; letter-spacing: -1.5px; color: var(--label); line-height: 1; }
+.hero-num-sub { font-size: 12px; color: var(--label-2); margin-top: 2px; }
+
+/* Progress ring */
+.progress-ring-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+.progress-ring { transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--fill-2); stroke-width: 10; }
+.ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+.ring-text { transform: rotate(90deg); }
+
+/* Subject pills */
+.subj-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.subj-pill {
+  background: var(--fill-4);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+}
+.pill-name { font-size: 11px; font-weight: 500; color: var(--label-2); margin-bottom: 4px; }
+.pill-nums { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+.pill-bar { height: 4px; background: var(--fill-2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.pill-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* ─────────────────────────────────────────────
+   PACE ACCORDION
+───────────────────────────────────────────── */
+.subj-accordion {
+  background: var(--bg-elevated);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.acc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  transition: background 0.15s;
+}
+.acc-header:active { background: var(--fill-4); }
+.acc-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.acc-name { font-size: 16px; font-weight: 600; flex: 1; }
+.acc-meta { font-size: 13px; color: var(--label-2); }
+.acc-chevron {
+  font-size: 12px; color: var(--label-3);
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  transform: rotate(-90deg);
+}
+.acc-chevron.open { transform: rotate(0deg); }
+.acc-body { display: none; border-top: 0.5px solid var(--sep); }
+.acc-body.open { display: block; }
+.grade-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--label-3);
+  padding: 10px 16px 6px;
+}
+
+/* PACE row */
+.pace-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--sep);
+  cursor: pointer;
+  transition: background 0.1s;
+  -webkit-user-select: none; user-select: none;
+}
+.pace-row:last-child { border-bottom: none; }
+.pace-row:active { background: var(--fill-4); }
+.pace-check {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--label-4);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pace-check.on {
+  border-color: transparent;
+}
+.pace-check-inner { width: 13px; height: 13px; display: none; }
+.pace-check-inner path { fill: #fff; }
+.pace-check.on .pace-check-inner { display: block; }
+.pace-check.on i.ri-check-line { display: block; color: #fff; font-size: 14px; }
+.pace-check i.ri-check-line { display: none; }
+.pace-label { font-size: 15px; font-weight: 400; flex: 1; color: var(--label); transition: color 0.2s; }
+.pace-row.done .pace-label { color: var(--label-3); text-decoration: line-through; text-decoration-color: var(--label-4); }
+.pace-badge {
+  font-size: 11px; font-weight: 600;
+  background: rgba(10,132,255,0.15);
+  color: var(--blue);
+  border-radius: 6px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.pace-done-badge {
+  font-size: 11px; font-weight: 500;
+  color: var(--label-3);
+  display: none;
+}
+.pace-row.done .pace-done-badge { display: block; }
+.pace-row.done .pace-badge { display: none; }
+
+/* ─────────────────────────────────────────────
+   CALENDAR
+───────────────────────────────────────────── */
+.cal-card { background: var(--bg-elevated); border-radius: var(--r-xl); overflow: hidden; margin-bottom: 8px; }
+.cal-month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 10px;
+}
+.cal-month-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.cal-month-year { font-size: 20px; font-weight: 300; color: var(--label-2); margin-left: 6px; }
+.cal-dow-row { display: grid; grid-template-columns: repeat(7,1fr); padding: 0 12px; margin-bottom: 4px; }
+.cal-dow-cell { text-align: center; font-size: 11px; font-weight: 600; color: var(--label-3); padding: 4px 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; padding: 0 10px 16px; }
+.cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+  -webkit-user-select: none; user-select: none;
+}
+.cal-cell:active { opacity: 0.7; }
+.cal-cell.inactive { opacity: 0.2; pointer-events: none; }
+.cal-cell.today {
+  background: var(--blue);
+}
+.cal-cell.today .cal-cell-num { color: #fff; font-weight: 700; }
+.cal-cell.selected:not(.today) {
+  background: var(--fill-2);
+}
+/* .cal-cell.deadline { } */
+.cal-cell.deadline .cal-cell-num { color: var(--red); font-weight: 700; }
+.cal-cell.term-end .cal-cell-num { color: var(--orange); font-weight: 700; }
+.cal-cell-num { font-size: 14px; font-weight: 400; color: var(--label); line-height: 1; }
+.cal-dots { display: flex; gap: 2px; margin-top: 2px; }
+.cal-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+/* Day detail */
+.detail-card {
+  background: var(--bg-elevated);
+  border-radius: var(--r-xl);
+  padding: 18px 20px;
+  margin-bottom: 8px;
+}
+.detail-date { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 12px; }
+.detail-event {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--sep);
+}
+.detail-event:last-child { border-bottom: none; }
+.detail-event-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.detail-event-label { font-size: 15px; font-weight: 500; flex: 1; }
+.detail-event-tag { font-size: 12px; color: var(--label-3); }
+
+/* ─────────────────────────────────────────────
+   SCHEDULE
+───────────────────────────────────────────── */
+.day-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 14px;
+}
+.day-pill {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--fill-3);
+  border-radius: var(--r-md);
+  padding: 9px 14px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.18s;
+  font-family: var(--font);
+  -webkit-user-select: none; user-select: none;
+}
+.day-pill.active {
+  background: var(--blue);
+  border-color: transparent;
+}
+.day-pill:active { transform: scale(0.94); }
+.day-pill-emoji { font-size: 18px; }
+.day-pill-label { font-size: 12px; font-weight: 600; color: var(--label-2); }
+.day-pill.active .day-pill-label { color: #fff; }
+
+.sched-header-card {
+  background: var(--bg-elevated);
+  border-radius: var(--r-xl);
+  padding: 18px 20px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sched-day-name { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+.sched-tag { font-size: 13px; font-weight: 600; border-radius: 20px; padding: 5px 14px; }
+
+.block-row {
+  background: var(--bg-elevated);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.block-stripe {
+  width: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 36px;
+}
+.block-body { flex: 1; min-width: 0; }
+.block-title { font-size: 15px; font-weight: 600; color: var(--label); }
+.block-sub { font-size: 12px; color: var(--label-2); margin-top: 2px; line-height: 1.4; }
+.block-time {
+  font-size: 12px; font-weight: 500;
+  color: var(--label-2);
+  background: var(--fill-3);
+  border-radius: 8px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────
+   TIPS / SETTINGS STYLE
+───────────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.stat-cell {
+  background: var(--bg-elevated);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+}
+.stat-cell-label { font-size: 11px; font-weight: 500; color: var(--label-2); margin-bottom: 4px; }
+.stat-cell-val { font-size: 28px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.stat-cell-unit { font-size: 13px; font-weight: 400; color: var(--label-2); margin-left: 2px; }
+
+.tip-row {
+  background: var(--bg-elevated);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.tip-icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+/* .tip-body {} */
+.tip-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.tip-text { font-size: 13px; color: var(--label-2); line-height: 1.55; }
+
+/* GED term plan */
+.term-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.term-plan-cell {
+  background: var(--fill-4);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+}
+.term-cell-label { font-size: 11px; color: var(--label-3); margin-bottom: 2px; }
+.term-cell-val { font-size: 17px; font-weight: 700; }
+
+/* ─────────────────────────────────────────────
+   ANIMATIONS & MICRO-INTERACTIONS
+───────────────────────────────────────────── */
+@keyframes checkPop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pace-check.on { animation: checkPop 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────────────────────────
+     NAV BAR
+───────────────────────────────────────────── -->
+<div class="nav-bar">
+  <div class="nav-inner">
+    <div class="nav-eyebrow">Heritage Christian College</div>
+    <div class="nav-title">S'thandiwe Chandu</div>
+    <div class="nav-sub">GED Projection · Term 2</div>
+  </div>
+  <div class="chips-row">
+    <!-- Speech -->
+    <div class="chip chip-urgent" id="chip-speech">
+      <div class="chip-icon"><i class="ri-mic-line"></i></div>
+      <div class="chip-text-wrap">
+        <div class="chip-top">Speech due</div>
+        <div class="chip-num" id="d-speech" style="color:var(--red)">—</div>
+        <div class="chip-bot">days · May 15</div>
+      </div>
+    </div>
+    <!-- Book -->
+    <div class="chip">
+      <div class="chip-icon"><i class="ri-book-line"></i></div>
+      <div class="chip-text-wrap">
+        <div class="chip-top">Book report</div>
+        <div class="chip-num" id="d-book" style="color:var(--orange)">—</div>
+        <div class="chip-bot">days · Jun 12</div>
+      </div>
+    </div>
+    <!-- Term -->
+    <div class="chip">
+      <div class="chip-icon"><i class="ri-flag-line"></i></div>
+      <div class="chip-text-wrap">
+        <div class="chip-top">Term 2 ends</div>
+        <div class="chip-num" id="d-term" style="color:var(--yellow)">—</div>
+        <div class="chip-bot">days · Jun 26</div>
+      </div>
+    </div>
+    <!-- GED -->
+    <div class="chip">
+      <div class="chip-icon"><i class="ri-graduation-cap-line"></i></div>
+      <div class="chip-text-wrap">
+        <div class="chip-top">GED PACEs</div>
+        <div class="chip-num" id="d-ged" style="color:var(--teal)">37</div>
+        <div class="chip-bot">remaining</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────────
+     PANELS
+───────────────────────────────────────────── -->
+<div class="panels">
+
+<!-- ══ PANEL: GED ══ -->
+<div id="panel-ged" class="panel active">
+
+  <!-- Hero progress card -->
+  <div class="hero-card">
+    <div class="hero-top">
+      <div>
+        <div class="hero-title">GED Progress</div>
+        <div class="hero-sub">3 terms to complete</div>
+      </div>
+      <div class="hero-num-wrap">
+        <div class="hero-num"><span id="hero-done">8</span><span style="font-size:22px;font-weight:300;color:var(--label-2)">/45</span></div>
+        <div class="hero-num-sub">PACEs done</div>
+      </div>
+    </div>
+
+    <!-- Ring -->
+    <div class="progress-ring-wrap">
+      <svg class="progress-ring" width="140" height="140" viewBox="0 0 140 140">
+        <circle class="ring-track" cx="70" cy="70" r="58"/>
+        <circle class="ring-fill" id="ring-fill" cx="70" cy="70" r="58"
+          stroke="var(--blue)"
+          stroke-dasharray="364.4"
+          stroke-dashoffset="364.4"/>
+        <text class="ring-text" x="70" y="70" text-anchor="middle" dominant-baseline="middle"
+          fill="var(--label)" font-size="32" font-weight="700" font-family="-apple-system,sans-serif"
+          id="ring-pct">18%</text>
+      </svg>
+    </div>
+
+    <!-- Subject pills -->
+    <div class="subj-pills">
+      <div class="subj-pill">
+        <div class="pill-name"><i class="ri-ruler-line"></i> Mathematics</div>
+        <div class="pill-nums" style="color:var(--orange)" id="pill-math">3<span style="font-size:15px;font-weight:400;color:var(--label-3)">/8</span></div>
+        <div class="pill-bar"><div class="pill-bar-fill" style="background:var(--orange)" id="pbar-math"></div></div>
+      </div>
+      <div class="subj-pill">
+        <div class="pill-name"><i class="ri-edit-line"></i> English</div>
+        <div class="pill-nums" style="color:var(--red)" id="pill-eng">1<span style="font-size:15px;font-weight:400;color:var(--label-3)">/4</span></div>
+        <div class="pill-bar"><div class="pill-bar-fill" style="background:var(--red)" id="pbar-eng"></div></div>
+      </div>
+      <div class="subj-pill">
+        <div class="pill-name"><i class="ri-earth-line"></i> Social Studies</div>
+        <div class="pill-nums" style="color:var(--green)" id="pill-soc">2<span style="font-size:15px;font-weight:400;color:var(--label-3)">/19</span></div>
+        <div class="pill-bar"><div class="pill-bar-fill" style="background:var(--green)" id="pbar-soc"></div></div>
+      </div>
+      <div class="subj-pill">
+        <div class="pill-name"><i class="ri-microscope-line"></i> Physical Science</div>
+        <div class="pill-nums" style="color:var(--teal)" id="pill-sci">2<span style="font-size:15px;font-weight:400;color:var(--label-3)">/14</span></div>
+        <div class="pill-bar"><div class="pill-bar-fill" style="background:var(--teal)" id="pbar-sci"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Term 2 current focus card -->
+  <div class="section-header">Term 2 Focus</div>
+  <div class="card">
+    <div class="card-row">
+      <div class="card-icon-wrap" style="background:rgba(255,159,10,0.18)"><i class="ri-ruler-line"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-title">Maths · Lit 105, 112</div>
+        <div class="card-row-sub">+ Lit 113, 114, 133 upcoming</div>
+      </div>
+      <div class="card-row-trail" style="color:var(--orange)">3 left</div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="card-row">
+      <div class="card-icon-wrap" style="background:rgba(255,69,58,0.18)"><i class="ri-edit-line"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-title">English · 131, 132 + Essay</div>
+        <div class="card-row-sub">5,000 word essay required</div>
+      </div>
+      <div class="card-row-trail" style="color:var(--red)">3 left</div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="card-row">
+      <div class="card-icon-wrap" style="background:rgba(48,209,88,0.18)"><i class="ri-earth-line"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-title">Social Studies · WH 106–108, WG 97–98</div>
+        <div class="card-row-sub">World History + World Geography</div>
+      </div>
+      <div class="card-row-trail" style="color:var(--green)">5 this term</div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="card-row">
+      <div class="card-icon-wrap" style="background:rgba(64,203,224,0.18)"><i class="ri-microscope-line"></i></div>
+      <div class="card-row-body">
+        <div class="card-row-title">Physical Science · Bio 107–108, Phys 111–112</div>
+        <div class="card-row-sub">Biology + Physics</div>
+      </div>
+      <div class="card-row-trail" style="color:var(--teal)">4 this term</div>
+      <span class="chevron">›</span>
+    </div>
+  </div>
+
+  <!-- MATHEMATICS -->
+  <div class="section-header">Mathematics — 8 PACEs Total</div>
+  <div class="subj-accordion">
+    <div class="acc-header" onclick="toggleAcc('math')">
+      <div class="acc-dot" style="background:var(--orange)"></div>
+      <div class="acc-name">Mathematics</div>
+      <div class="acc-meta" id="ameta-math">3 / 8 done</div>
+      <div class="acc-chevron" id="achev-math">▼</div>
+    </div>
+    <div class="acc-body" id="abody-math">
+      <div class="grade-label">Grade 9 — Completed</div>
+      <div class="pace-row done" data-key="math-0" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--orange)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 99</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row done" data-key="math-1" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--orange)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 100</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row done" data-key="math-2" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--orange)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 102</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="grade-label">Maths Literacy — Grade 10 & 11</div>
+      <div class="pace-row" data-key="math-3" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE Lit 105</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="math-4" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE Lit 112</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="math-5" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE Lit 113</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="math-6" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE Lit 114</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="math-7" data-color="var(--orange)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE Lit 133</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENGLISH -->
+  <div class="section-header">English — 4 PACEs Total</div>
+  <div class="subj-accordion">
+    <div class="acc-header" onclick="toggleAcc('eng')">
+      <div class="acc-dot" style="background:var(--red)"></div>
+      <div class="acc-name">English</div>
+      <div class="acc-meta" id="ameta-eng">1 / 4 done</div>
+      <div class="acc-chevron" id="achev-eng">▼</div>
+    </div>
+    <div class="acc-body" id="abody-eng">
+      <div class="grade-label">Grade 9 — N/A (Completed)</div>
+      <div class="grade-label">Grade 10 & 11</div>
+      <div class="pace-row done" data-key="eng-0" data-color="var(--red)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--red)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 127</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="eng-1" data-color="var(--red)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 131</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="eng-2" data-color="var(--red)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">PACE 132</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="eng-3" data-color="var(--red)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">5,000 Word Essay</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Submitted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOCIAL STUDIES -->
+  <div class="section-header">Social Studies — 19 PACEs Total</div>
+  <div class="subj-accordion">
+    <div class="acc-header" onclick="toggleAcc('soc')">
+      <div class="acc-dot" style="background:var(--green)"></div>
+      <div class="acc-name">Social Studies</div>
+      <div class="acc-meta" id="ameta-soc">2 / 19 done</div>
+      <div class="acc-chevron" id="achev-soc">▼</div>
+    </div>
+    <div class="acc-body" id="abody-soc">
+      <div class="grade-label">Grade 9 — Social Sciences</div>
+      <div class="pace-row done" data-key="soc-0" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--green)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Social Sciences PACE 94</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-1" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Social Sciences PACE 95</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-2" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Social Sciences PACE 96</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="grade-label">Grade 9 — World History</div>
+      <div class="pace-row done" data-key="soc-3" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--green)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World History PACE 105</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-4" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World History PACE 106</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-5" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World History PACE 107</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-6" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World History PACE 108</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="grade-label">Grade 10 & 11 — World Geography</div>
+      <div class="pace-row" data-key="soc-7" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World Geography PACE 97</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-8" data-color="var(--green)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">World Geography PACE 98</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="soc-9" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 99</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-10" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 100</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-11" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 101</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-12" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 102</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-13" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 103</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-14" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 104</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-15" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 105</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-16" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 106</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-17" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 107</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="soc-18" data-color="var(--green)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">World Geography PACE 108</div><div class="pace-done-badge">Passed</div></div>
+    </div>
+  </div>
+
+  <!-- PHYSICAL SCIENCE -->
+  <div class="section-header">Physical Science — 14 PACEs Total</div>
+  <div class="subj-accordion">
+    <div class="acc-header" onclick="toggleAcc('sci')">
+      <div class="acc-dot" style="background:var(--teal)"></div>
+      <div class="acc-name">Physical Science</div>
+      <div class="acc-meta" id="ameta-sci">2 / 14 done</div>
+      <div class="acc-chevron" id="achev-sci">▼</div>
+    </div>
+    <div class="acc-body" id="abody-sci">
+      <div class="grade-label">Grade 9 — Biology</div>
+      <div class="pace-row done" data-key="sci-0" data-color="var(--teal)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--teal)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Biology PACE 106</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="sci-1" data-color="var(--teal)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Biology PACE 107</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="sci-2" data-color="var(--teal)" onclick="togglePace(this)">
+        <div class="pace-check"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Biology PACE 108</div>
+        <div class="pace-badge">Term 2</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="grade-label">Grade 10 & 11 — Physics</div>
+      <div class="pace-row done" data-key="sci-3" data-color="var(--teal)" onclick="togglePace(this)">
+        <div class="pace-check on" style="background:var(--teal)"><i class="ri-check-line"></i></div>
+        <div class="pace-label">Physics PACE 110</div>
+        <div class="pace-done-badge">Passed</div>
+      </div>
+      <div class="pace-row" data-key="sci-4" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 111</div><div class="pace-badge">Term 2</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-5" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 112</div><div class="pace-badge">Term 2</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-6" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 113</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-7" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 114</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-8" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 115</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-9" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 116</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-10" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 117</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-11" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 118</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-12" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 119</div><div class="pace-done-badge">Passed</div></div>
+      <div class="pace-row" data-key="sci-13" data-color="var(--teal)" onclick="togglePace(this)"><div class="pace-check"><i class="ri-check-line"></i></div><div class="pace-label">Physics PACE 120</div><div class="pace-done-badge">Passed</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANEL: CALENDAR ══ -->
+<div id="panel-cal" class="panel">
+  <div class="detail-card">
+    <div class="detail-date" id="detail-title">Today</div>
+    <div id="detail-events"><div style="color:var(--label-3);font-size:15px">Select a day to see events</div></div>
+  </div>
+  <div class="cal-card">
+    <div class="cal-month-header">
+      <div><span class="cal-month-name">May</span><span class="cal-month-year">2026</span></div>
+    </div>
+    <div class="cal-dow-row">
+      <div class="cal-dow-cell">S</div><div class="cal-dow-cell">M</div><div class="cal-dow-cell">T</div>
+      <div class="cal-dow-cell">W</div><div class="cal-dow-cell">T</div><div class="cal-dow-cell">F</div><div class="cal-dow-cell">S</div>
+    </div>
+    <div class="cal-grid" id="cal-may"></div>
+  </div>
+  <div class="cal-card">
+    <div class="cal-month-header">
+      <div><span class="cal-month-name">June</span><span class="cal-month-year">2026</span></div>
+    </div>
+    <div class="cal-dow-row">
+      <div class="cal-dow-cell">S</div><div class="cal-dow-cell">M</div><div class="cal-dow-cell">T</div>
+      <div class="cal-dow-cell">W</div><div class="cal-dow-cell">T</div><div class="cal-dow-cell">F</div><div class="cal-dow-cell">S</div>
+    </div>
+    <div class="cal-grid" id="cal-june"></div>
+  </div>
+
+  <div class="section-header">Weekly Pattern</div>
+  <div class="card">
+    <div class="card-row"><div class="card-icon-wrap" style="background:rgba(10,132,255,0.18)"><i class="ri-building-line"></i></div><div class="card-row-body"><div class="card-row-title">School</div><div class="card-row-sub">Mon–Thu 8am–2pm · Fri 8am–1pm</div></div></div>
+    <div class="card-row"><div class="card-icon-wrap" style="background:rgba(48,209,88,0.18)"><i class="ri-football-fill"></i></div><div class="card-row-body"><div class="card-row-title">Soccer Training</div><div class="card-row-sub">Mon · Tue · Thu · 3:00–6:45pm</div></div></div>
+    <div class="card-row"><div class="card-icon-wrap" style="background:rgba(255,69,58,0.18)"><i class="ri-trophy-line"></i></div><div class="card-row-body"><div class="card-row-title">Soccer Games</div><div class="card-row-sub">Saturday & Sunday</div></div></div>
+    <div class="card-row"><div class="card-icon-wrap" style="background:rgba(255,214,10,0.18)"><i class="ri-book-open-line"></i></div><div class="card-row-body"><div class="card-row-title">Power Study Days</div><div class="card-row-sub">Wednesday (full afternoon) · Friday (from 1pm)</div></div></div>
+  </div>
+</div>
+
+<!-- ══ PANEL: SCHEDULE ══ -->
+<div id="panel-sched" class="panel">
+  <div class="day-scroll" id="day-scroll"></div>
+  <div class="sched-header-card">
+    <div>
+      <div class="sched-day-name" id="sched-name">Monday</div>
+      <div style="font-size:13px;color:var(--label-2);margin-top:2px" id="sched-sub"></div>
+    </div>
+    <div class="sched-tag" id="sched-tag"></div>
+  </div>
+  <div id="sched-blocks"></div>
+</div>
+
+<!-- ══ PANEL: TIPS ══ -->
+<div id="panel-tips" class="panel">
+  <div class="section-header">Key Numbers</div>
+  <div class="stat-grid">
+    <div class="stat-cell"><div class="stat-cell-label">GED PACEs Left</div><div class="stat-cell-val" style="color:var(--teal)" id="stat-ged">37</div></div>
+    <div class="stat-cell"><div class="stat-cell-label">Days to Speech</div><div class="stat-cell-val" style="color:var(--red)" id="stat-sp">—</div></div>
+    <div class="stat-cell"><div class="stat-cell-label">Term 2 Weeks Left</div><div class="stat-cell-val" style="color:var(--yellow)" id="stat-wk">—</div></div>
+    <div class="stat-cell"><div class="stat-cell-label">Book Pages/Day</div><div class="stat-cell-val" style="color:var(--green)">~10</div></div>
+    <div class="stat-cell"><div class="stat-cell-label">Term 2 PACEs</div><div class="stat-cell-val" style="color:var(--blue)">16</div></div>
+    <div class="stat-cell"><div class="stat-cell-label">PACEs / Week</div><div class="stat-cell-val" style="color:var(--orange)">~2.5</div></div>
+  </div>
+
+  <div class="section-header">GED Term Plan</div>
+  <div class="card" style="padding:16px 0;overflow:visible;background:transparent;gap:8px;display:grid">
+    <div style="background:var(--bg-elevated);border-radius:var(--r-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:15px;font-weight:500"><i class="ri-ruler-line"></i> Maths per term</div>
+      <div style="font-size:17px;font-weight:700;color:var(--orange)">3 PACEs</div>
+    </div>
+    <div style="background:var(--bg-elevated);border-radius:var(--r-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:15px;font-weight:500"><i class="ri-edit-line"></i> English per term</div>
+      <div style="font-size:17px;font-weight:700;color:var(--red)">2 + Essay</div>
+    </div>
+    <div style="background:var(--bg-elevated);border-radius:var(--r-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:15px;font-weight:500"><i class="ri-earth-line"></i> Social Studies per term</div>
+      <div style="font-size:17px;font-weight:700;color:var(--green)">4 PACEs</div>
+    </div>
+    <div style="background:var(--bg-elevated);border-radius:var(--r-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:15px;font-weight:500"><i class="ri-microscope-line"></i> Science per term</div>
+      <div style="font-size:17px;font-weight:700;color:var(--teal)">4 PACEs</div>
+    </div>
+  </div>
+
+  <div class="section-header">Study Tips</div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(191,90,242,0.18)"><i class="ri-graduation-cap-line"></i></div><div class="tip-body"><div class="tip-title">GED Focus — 8 of 45 Done</div><div class="tip-text">You're 17.8% through your GED. Social Studies (17 left) and Physics (10 left) are the biggest mountains. Every PACE you tick now shortens that list permanently.</div></div></div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(255,69,58,0.18)"><i class="ri-mic-line"></i></div><div class="tip-body"><div class="tip-title">Speech — Due May 15 (Urgent)</div><div class="tip-text">Write your 2-minute speech on respect and kindness. Practice it out loud, time yourself, and record yourself on your phone. 2 minutes disappears fast if you're unprepared.</div></div></div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(255,159,10,0.18)"><i class="ri-book-line"></i></div><div class="tip-body"><div class="tip-title">Book Report — Choose Now</div><div class="tip-text">Due June 12. Pick your 250-page book this week. Read 10 pages a day — that's 20 minutes. Finish the book by June 1 to give yourself time to write the report.</div></div></div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(255,214,10,0.18)"><i class="ri-book-open-line"></i></div><div class="tip-body"><div class="tip-title">Wed & Fri Are Your Secret Weapons</div><div class="tip-text">No training on Wednesday. School ends at 1pm on Friday. Protect these windows every week and you will hit your PACE targets without burning out on school nights.</div></div></div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(48,209,88,0.18)"><i class="ri-football-fill"></i></div><div class="tip-body"><div class="tip-title">Use Your Goal Card Every Day</div><div class="tip-text">Every morning — pencil first, then pen. 4–6 pages per subject. Don't skip Checkups. You need 80%+ on the PACE Test to pass and tick it off for GED credit.</div></div></div>
+  <div class="tip-row"><div class="tip-icon-wrap" style="background:rgba(94,92,230,0.18)"><i class="ri-moon-line"></i></div><div class="tip-body"><div class="tip-title">Sleep = Performance On Both Fields</div><div class="tip-text">On training nights (Mon/Tue/Thu) be in bed by 21:00. Your brain consolidates learning and your muscles recover while you sleep. Rest is not wasted time.</div></div></div>
+</div>
+
+</div><!-- .panels -->
+
+<!-- ─────────────────────────────────────────────
+     TAB BAR
+───────────────────────────────────────────── -->
+<div class="tab-bar">
+  <button class="tab-item active" id="tab-ged" onclick="switchPanel('ged')">
+    <div class="tab-icon"><i class="ri-graduation-cap-line"></i></div>
+    <div class="tab-label">GED</div>
+  </button>
+  <button class="tab-item" id="tab-cal" onclick="switchPanel('cal')">
+    <div class="tab-icon"><i class="ri-calendar-line"></i></div>
+    <div class="tab-label">Calendar</div>
+  </button>
+  <button class="tab-item" id="tab-sched" onclick="switchPanel('sched')">
+    <div class="tab-icon"><i class="ri-calendar-2-line"></i></div>
+    <div class="tab-label">Schedule</div>
+  </button>
+  <button class="tab-item" id="tab-tips" onclick="switchPanel('tips')">
+    <div class="tab-icon"><i class="ri-lightbulb-line"></i></div>
+    <div class="tab-label">Tips</div>
+  </button>
+</div>
+
+<script>
+/* ─── TABS ─── */
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+/* ─── STATE ─── */
+let state = {};
+const DEFAULTS = { 'math-0':1,'math-1':1,'math-2':1,'eng-0':1,'soc-0':1,'soc-3':1,'sci-0':1,'sci-3':1 };
+try { const s = localStorage.getItem('sthandiwe_apple_v1'); state = s ? JSON.parse(s) : {...DEFAULTS}; }
+catch(e) { state = {...DEFAULTS}; }
+if (!localStorage.getItem('sthandiwe_apple_v1')) save();
+function save() { try { localStorage.setItem('sthandiwe_apple_v1', JSON.stringify(state)); } catch(e) {} }
+
+/* ─── PACE TOGGLE ─── */
+function togglePace(row) {
+  const key = row.dataset.key;
+  const color = row.dataset.color;
+  state[key] = state[key] ? 0 : 1;
+  save();
+  const chk = row.querySelector('.pace-check');
+  if (state[key]) {
+    row.classList.add('done');
+    chk.classList.add('on');
+    chk.style.background = color;
+  } else {
+    row.classList.remove('done');
+    chk.classList.remove('on');
+    chk.style.background = 'transparent';
+  }
+  refreshStats();
+}
+
+function syncVisuals() {
+  document.querySelectorAll('.pace-row').forEach(row => {
+    const key = row.dataset.key;
+    if (!key) return;
+    const chk = row.querySelector('.pace-check');
+    if (state[key]) {
+      row.classList.add('done');
+      chk.classList.add('on');
+      chk.style.background = row.dataset.color;
+    }
+  });
+}
+
+/* ─── STATS ─── */
+function count(prefix, total) {
+  let d = 0; for (let i=0;i<total;i++) if(state[prefix+'-'+i]) d++; return d;
+}
+const TOTALS = {math:8,eng:4,soc:19,sci:14};
+const GRAND = 45;
+
+function refreshStats() {
+  const md=count('math',8), ed=count('eng',4), sd=count('soc',19), cd=count('sci',14);
+  const done = md+ed+sd+cd;
+  const pct = Math.round(done/GRAND*100);
+  const circ = 364.4;
+
+  document.getElementById('hero-done').textContent = done;
+  document.getElementById('ring-pct').textContent = pct + '%';
+  const fill = document.getElementById('ring-fill');
+  fill.style.strokeDashoffset = circ - (circ * done / GRAND);
+
+  // Pills
+  const setP = (id, d, t) => {
+    document.getElementById('pill-'+id).innerHTML = d+'<span style="font-size:15px;font-weight:400;color:var(--label-3)">/'+t+'</span>';
+    document.getElementById('pbar-'+id).style.width = (d/t*100)+'%';
+  };
+  setP('math',md,8); setP('eng',ed,4); setP('soc',sd,19); setP('sci',cd,14);
+
+  // Accordion meta
+  document.getElementById('ameta-math').textContent = md+' / 8 done';
+  document.getElementById('ameta-eng').textContent  = ed+' / 4 done';
+  document.getElementById('ameta-soc').textContent  = sd+' / 19 done';
+  document.getElementById('ameta-sci').textContent  = cd+' / 14 done';
+
+  // Header chip & tips
+  const rem = GRAND - done;
+  document.getElementById('d-ged').textContent = rem;
+  document.getElementById('stat-ged').textContent = rem;
+}
+
+/* ─── ACCORDION ─── */
+function toggleAcc(id) {
+  const body = document.getElementById('abody-'+id);
+  const chev = document.getElementById('achev-'+id);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+/* ─── COUNTDOWNS ─── */
+function daysUntil(y,m,d) {
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.max(0, Math.ceil((new Date(y,m-1,d)-t)/86400000));
+}
+function updateCountdowns() {
+  const sp=daysUntil(2026,5,15), bk=daysUntil(2026,6,12), tr=daysUntil(2026,6,26);
+  document.getElementById('d-speech').textContent=sp;
+  document.getElementById('d-book').textContent=bk;
+  document.getElementById('d-term').textContent=tr;
+  document.getElementById('stat-sp').textContent=sp;
+  document.getElementById('stat-wk').textContent='~'+(tr/7).toFixed(1);
+}
+updateCountdowns();
+
+/* ─── CALENDAR ─── */
+const todayStr = (() => { const t=new Date(); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); })();
+let selectedStr = todayStr;
+
+const evMap = {};
+function addEv(k,ev) { if(!evMap[k]) evMap[k]=[]; evMap[k].push(ev); }
+function ds(y,m,d) { return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+
+for(let m=5;m<=6;m++) {
+  const days=m===5?31:26, start=m===5?11:1;
+  for(let d=start;d<=days;d++) {
+    const k=ds(2026,m,d), dow=new Date(2026,m-1,d).getDay();
+    if(dow>=1&&dow<=5) addEv(k,{t:'school',l:dow===5?'School 8am–1pm':'School 8am–2pm',c:'#0A84FF'});
+    if(dow===2||dow===3||dow===4||dow===5) addEv(k,{t:'train',l:'Soccer Training 3–6:40pm',c:'#30D158'});
+    if(dow===2||dow===4) addEv(k,{t:'tutor',l:'Tutoring Lessons 2–2:40pm',c:'#BF5AF2'});
+    if(dow===6||dow===0) addEv(k,{t:'game',l:'Soccer Game',c:'#FF453A'});
+    if(dow===3||dow===5) addEv(k,{t:'study',l:dow===5?'Power Study Day (finish 1pm)':'Power Study Day',c:'#FFD60A'});
+  }
+}
+addEv('2026-05-15',{t:'deadline',l:'Speech Due',c:'#FF453A',bold:true});
+addEv('2026-06-12',{t:'deadline',l:'Book Report Due',c:'#FF9F0A',bold:true});
+addEv('2026-06-26',{t:'term',l:'Term 2 Ends — GED Checkpoint',c:'#FFD60A',bold:true});
+
+function buildCal(containerId, year, month) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  const first = new Date(year,month-1,1).getDay();
+  const days = new Date(year,month,0).getDate();
+  for(let i=0;i<first;i++) { const b=document.createElement('div'); c.appendChild(b); }
+  for(let d=1;d<=days;d++) {
+    const k=ds(year,month,d);
+    const isPast=(month===5&&d<11), isAfter=(month===6&&d>26);
+    const el=document.createElement('div'); el.className='cal-cell';
+    if(isPast||isAfter) el.classList.add('inactive');
+    if(k===todayStr) el.classList.add('today');
+    if(k===selectedStr&&k!==todayStr) el.classList.add('selected');
+    const evs=evMap[k]||[];
+    const dead=evs.find(e=>e.t==='deadline'||e.t==='term');
+    if(dead) el.classList.add(dead.t==='term'?'term-end':'deadline');
+    const num=document.createElement('div'); num.className='cal-cell-num'; num.textContent=d; el.appendChild(num);
+    const dotsWrap=document.createElement('div'); dotsWrap.className='cal-dots';
+    const colors=[];
+    if(evs.some(e=>e.t==='school')) colors.push('#0A84FF');
+    if(evs.some(e=>e.t==='train')) colors.push('#30D158');
+    if(evs.some(e=>e.t==='tutor')) colors.push('#BF5AF2');
+    if(evs.some(e=>e.t==='game')) colors.push('#FF453A');
+    if(evs.some(e=>e.t==='study')) colors.push('#FFD60A');
+    if(dead) colors.push(dead.c);
+    colors.slice(0,3).forEach(col=>{ const dot=document.createElement('div'); dot.className='cal-dot'; dot.style.background=col; dotsWrap.appendChild(dot); });
+    el.appendChild(dotsWrap);
+    if(!isPast&&!isAfter) el.addEventListener('click',()=>selectDay(k));
+    c.appendChild(el);
+  }
+}
+
+function selectDay(k) {
+  selectedStr = k;
+  buildCal('cal-may',2026,5); buildCal('cal-june',2026,6);
+  renderDetail(k);
+}
+function renderDetail(k) {
+  const d = new Date(k+'T00:00:00');
+  document.getElementById('detail-title').textContent =
+    d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const evs = (evMap[k]||[]);
+  const el = document.getElementById('detail-events');
+  if(!evs.length) { el.innerHTML='<div style="color:var(--label-3);font-size:15px">No events scheduled</div>'; return; }
+  el.innerHTML = evs.map(ev=>`
+    <div class="detail-event">
+      <div class="detail-event-dot" style="background:${ev.c}"></div>
+      <div class="detail-event-label" style="${ev.bold?'color:'+ev.c+';font-weight:600':''}">
+        ${ev.l}
+      </div>
+      ${ev.bold?`<div class="detail-event-tag" style="color:${ev.c}">Key Date</div>`:''}
+    </div>`).join('');
+}
+buildCal('cal-may',2026,5); buildCal('cal-june',2026,6); renderDetail(todayStr);
+
+/* ─── SCHEDULE ─── */
+const SCHED = {
+  Mon:{e:'ri-football-fill',label:'Monday',tag:'Study Day',tagC:'#0A84FF',sub:'Focus on schoolwork and study goals',
+    blocks:[
+      {t:'8:00–14:00',l:'School',s:'All subjects · aim for 4–6 pages each on Goal Card',c:'#0A84FF'},
+      {t:'14:00–15:00',l:'Lunch & Rest',s:'Decompress and recharge',c:'#636366'},
+      {t:'15:00–19:00',l:'Home Study',s:'PACE work + English essay',c:'#FF9F0A'},
+      {t:'19:00–19:15',l:'Dinner',s:'Refuel',c:'#636366'},
+      {t:'19:15–20:30',l:'Light Review',s:'Speech prep + reading',c:'#FF9F0A'},
+      {t:'20:30–20:45',l:'Scripture Memory',s:'Acts 1:3-11 & Acts 2:22-28 — read aloud',c:'#BF5AF2'},
+      {t:'20:45+',l:'Wind Down & Sleep',s:'Bed by 21:00 — rest is performance',c:'#3A3A3C'},
+    ]},
+  Tue:{e:'ri-football-fill',label:'Tuesday',tag:'Tutoring & Soccer',tagC:'#30D158',sub:'Tutoring 2:00–2:40pm, Soccer 3:00–6:40pm',
+    blocks:[
+      {t:'8:00–14:00',l:'School',s:'All subjects · 4–6 pages each',c:'#0A84FF'},
+      {t:'14:00–14:40',l:'Tutoring Lessons',s:'Get help on challenging subjects',c:'#BF5AF2'},
+      {t:'14:40–15:00',l:'Lunch & Rest',s:'Quick break before training',c:'#636366'},
+      {t:'15:00–18:40',l:'Soccer Training',s:'Compete with intensity',c:'#30D158'},
+      {t:'18:40–19:15',l:'Dinner',s:'Refuel properly',c:'#636366'},
+      {t:'19:15–20:30',l:'Evening Study',s:'Quick review + 20 pages reading',c:'#FF9F0A'},
+      {t:'20:30–20:45',l:'Scripture Memory',s:'Recite Acts 1:3-11 from memory',c:'#BF5AF2'},
+      {t:'20:45+',l:'Sleep',s:'Rest for next day',c:'#3A3A3C'},
+    ]},
+  Wed:{e:'ri-book-open-line',label:'Wednesday',tag:'Soccer Training',tagC:'#30D158',sub:'Soccer training 3:00–6:40pm',
+    blocks:[
+      {t:'8:00–14:00',l:'School',s:'Push hard — study afternoon ahead',c:'#0A84FF'},
+      {t:'14:00–14:30',l:'Lunch',s:'Quick break, then lock in',c:'#636366'},
+      {t:'14:30–15:00',l:'Study Block',s:'PACE catch-up + English essay writing',c:'#FFD60A'},
+      {t:'15:00–15:30',l:'Prep & Rest',s:'Gear up for training',c:'#636366'},
+      {t:'15:30–18:40',l:'Soccer Training',s:'Full effort · develop skills',c:'#30D158'},
+      {t:'18:40–19:15',l:'Dinner',s:'Good energy after training',c:'#636366'},
+      {t:'19:15–20:15',l:'Light Study',s:'Book reading — 20–30 pages',c:'#FF9F0A'},
+      {t:'20:15–20:30',l:'Scripture Memory',s:'Acts 2:22-28 — read and repeat',c:'#BF5AF2'},
+      {t:'20:30+',l:'Sleep',s:'Balance study & sports',c:'#3A3A3C'},
+    ]},
+  Thu:{e:'ri-football-fill',label:'Thursday',tag:'Tutoring & Soccer',tagC:'#30D158',sub:'Tutoring 2:00–2:40pm, Soccer 3:00–6:40pm',
+    blocks:[
+      {t:'8:00–14:00',l:'School',s:'Stay consistent on daily goals',c:'#0A84FF'},
+      {t:'14:00–14:40',l:'Tutoring Lessons',s:'Get specialized help on tough topics',c:'#BF5AF2'},
+      {t:'14:40–15:00',l:'Lunch & Rest',s:'Refuel for training',c:'#636366'},
+      {t:'15:00–18:40',l:'Soccer Training',s:'Full effort — represent your school',c:'#30D158'},
+      {t:'18:40–19:15',l:'Dinner',s:'Eat and hydrate well',c:'#636366'},
+      {t:'19:15–20:00',l:'Light Review + Scripture',s:'Easy PACE review + memory work only',c:'#BF5AF2'},
+      {t:'20:00+',l:'Sleep Early',s:'Hard training day — body needs full recovery',c:'#3A3A3C'},
+    ]},
+  Fri:{e:'ri-book-open-line',label:'Friday',tag:'Study & Soccer',tagC:'#FFD60A',sub:'School ends 1pm, Soccer 3:00–6:40pm',
+    blocks:[
+      {t:'8:00–13:00',l:'School',s:'Make every minute count',c:'#0A84FF'},
+      {t:'13:00–13:30',l:'Lunch',s:'Refuel for study block',c:'#636366'},
+      {t:'13:30–15:00',l:'Major Study Block',s:'Weekly PACE goal review — fill gaps',c:'#FFD60A'},
+      {t:'15:00–15:30',l:'Prep & Rest',s:'Gear up for training',c:'#636366'},
+      {t:'15:30–18:40',l:'Soccer Training',s:'Compete with energy · earn weekend',c:'#30D158'},
+      {t:'18:40–19:30',l:'Dinner',s:'Weekend starts — relax',c:'#636366'},
+      {t:'19:30–20:30',l:'Book Reading + Essay',s:'30 pages + essay progress',c:'#FF9F0A'},
+      {t:'20:30–20:45',l:'Scripture Memory',s:'Full recital — both passages',c:'#BF5AF2'},
+      {t:'20:45+',l:'Wind Down',s:'Five great days done ✓',c:'#3A3A3C'},
+    ]},
+  Sat:{e:'ri-trophy-line',label:'Saturday',tag:'Game Day',tagC:'#FF453A',sub:'',
+    blocks:[
+      {t:'Morning',l:'Prep & Travel',s:'Kit ready · good pre-game meal',c:'#636366'},
+      {t:'Game',l:'Soccer Game',s:'Compete hard · represent Heritage Christian',c:'#FF453A'},
+      {t:'Post-game',l:'Recovery',s:'Stretch · rest · celebrate',c:'#636366'},
+      {t:'~19:00',l:'Light Reading',s:'15–20 book pages — low effort, high reward',c:'#FF9F0A'},
+      {t:'Before bed',l:'Scripture Review',s:'Quick 5-min recite — both passages',c:'#BF5AF2'},
+    ]},
+  Sun:{e:'🏆',label:'Sunday',tag:'Game Day',tagC:'#FF453A',sub:'',
+    blocks:[
+      {t:'Morning',l:'Rest & Church',s:'Start the week the right way',c:'#636366'},
+      {t:'Afternoon',l:'Soccer Game',s:'Bring the energy from rest',c:'#FF453A'},
+      {t:'Post-game',l:'Recovery',s:'Rest body · light stretch',c:'#636366'},
+      {t:'~19:30',l:'Week Prep',s:'Write PACE goals for Monday on your Goal Card',c:'#FFD60A'},
+      {t:'Before bed',l:'Scripture Review',s:'Full recital — Acts 1 & Acts 2',c:'#BF5AF2'},
+    ]},
+};
+const DORD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let activeDay = 'Mon';
+
+function buildDayPills() {
+  document.getElementById('day-scroll').innerHTML = DORD.map(d=>`
+    <button class="day-pill ${d===activeDay?'active':''}" onclick="selDay('${d}')" style="background:${SCHED[d].tagC}22;border:2px solid ${SCHED[d].tagC}">
+      <i class="day-pill-emoji ${SCHED[d].e}" style="color:${SCHED[d].tagC}"></i>
+      <span class="day-pill-label">${d}</span>
+    </button>`).join('');
+}
+function selDay(d) { activeDay=d; buildDayPills(); buildBlocks(); }
+function buildBlocks() {
+  const info = SCHED[activeDay];
+  document.getElementById('sched-name').textContent = info.label;
+  document.getElementById('sched-sub').textContent = info.sub;
+  const tag = document.getElementById('sched-tag');
+  tag.textContent = info.tag;
+  tag.style.background = info.tagC + '22';
+  tag.style.color = info.tagC;
+  document.getElementById('sched-blocks').innerHTML = info.blocks.map(b=>`
+    <div class="block-row">
+      <div class="block-stripe" style="background:${b.c}"></div>
+      <div class="block-body">
+        <div class="block-title">${b.l}</div>
+        <div class="block-sub">${b.s}</div>
+      </div>
+      <div class="block-time">${b.t}</div>
+    </div>`).join('');
+}
+buildDayPills(); buildBlocks();
+
+/* ─── INIT ─── */
+syncVisuals();
+refreshStats();
+</script>
+</body>
+</html>
